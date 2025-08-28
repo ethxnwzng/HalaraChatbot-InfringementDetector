@@ -52,9 +52,9 @@ This is a sanitized version of the project for portfolio display. All sensitive 
 **Important**: Replace all placeholder values in `.env.example` and `config.example.py` with actual credentials before running the application.
 
 ## Performance Metrics
-# idea_bot Chatbot:
+### idea_bot Chatbot:
 
-# Infringement Detector:
+### Infringement Detector:
 - **Processing Speed**: 30+ products analyzed per run
 - **Accuracy**: 85%+ brand detection accuracy
 - **Scalability**: Handles 1000+ product images
@@ -62,9 +62,9 @@ This is a sanitized version of the project for portfolio display. All sensitive 
 
 ## Business Impact
    
-**idea_bot Chatbot**:
+### idea_bot Chatbot:
 
-**Infringement Detector**
+### Infringement Detector
 - **Efficiency**: Reduced manual product monitoring time by 80%
 - **Risk Management**: Identified 15+ high-risk products with potential infringement
 - **Cost Savings**: Automated analysis reducing manual review workload
