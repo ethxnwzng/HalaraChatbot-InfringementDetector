@@ -1,4 +1,4 @@
-# Projects done for Halara Internship Summer 2025: idea_bot Chatbot for Halara employees and a product Infringement Detector (crawler based and direct DB accesss based)
+# Halara Chatbot and a product Infringement Detector
 
 ## Project Overview
 
@@ -52,21 +52,20 @@ This is a sanitized version of the project for portfolio display. All sensitive 
 **Important**: Replace all placeholder values in `.env.example` and `config.example.py` with actual credentials before running the application.
 
 ## Performance Metrics
+# idea_bot Chatbot:
 
-   # idea_bot Chatbot:
-
-   # Infringement Detector:
-   - **Processing Speed**: 30+ products analyzed per run
-   - **Accuracy**: 85%+ brand detection accuracy
-   - **Scalability**: Handles 1000+ product images
-   - **Response Time**: <3 seconds for image analysis
+# Infringement Detector:
+- **Processing Speed**: 30+ products analyzed per run
+- **Accuracy**: 85%+ brand detection accuracy
+- **Scalability**: Handles 1000+ product images
+- **Response Time**: <3 seconds for image analysis
 
 ## Business Impact
    
-   # idea_bot Chatbot:
+**idea_bot Chatbot**:
 
-   # Infringement Detector  
-   - **Efficiency**: Reduced manual product monitoring time by 80%
-   - **Risk Management**: Identified 15+ high-risk products with potential infringement
-   - **Cost Savings**: Automated analysis reducing manual review workload
-   - **Scalability**: System processes 30+ products per run with room for expansion
+**Infringement Detector**
+- **Efficiency**: Reduced manual product monitoring time by 80%
+- **Risk Management**: Identified 15+ high-risk products with potential infringement
+- **Cost Savings**: Automated analysis reducing manual review workload
+- **Scalability**: System processes 30+ products per run with room for expansion
