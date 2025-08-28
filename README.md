@@ -1,10 +1,10 @@
-# AI-Powered Product Monitoring & Analysis System
+# Projects done for Halara Internship Summer 2025: idea_bot Chatbot for Halara employees and a product Infringement Detector (crawler based and direct DB accesss based)
 
-## 🚀 Project Overview
+## Project Overview
 
 This is a comprehensive AI-powered system that combines web scraping, computer vision, and natural language processing to monitor products for brand infringement and provide intelligent business insights through a conversational AI chatbot.
 
-## 🏗️ Architecture
+## Architecture
 
 ### Core Components
 
@@ -20,7 +20,7 @@ This is a comprehensive AI-powered system that combines web scraping, computer v
    - GPT-4 Vision API integration for brand logo and design element detection
    - Automated reporting with Lark spreadsheet integration
 
-## 🛠️ Technical Stack
+## Tech Stack
 
 - **Backend**: Python, Django, Redis, MySQL
 - **AI/ML**: OpenAI GPT-4, GPT-4 Vision API
@@ -29,7 +29,7 @@ This is a comprehensive AI-powered system that combines web scraping, computer v
 - **Data Processing**: Pandas, NumPy
 - **Testing**: Unit tests, Integration tests
 
-## 🔧 Key Features
+## Key Features
 
 ### Chatbot Capabilities
 - Multi-format file analysis (CSV, Excel, PDF, Images)
@@ -45,98 +45,28 @@ This is a comprehensive AI-powered system that combines web scraping, computer v
 - Automated report generation with embedded images
 - Duplicate detection and incremental processing
 
-## 📁 Project Structure
-
-```
-lark/
-├── home/
-│   ├── idea_bot/           # AI Chatbot implementation
-│   ├── crawler/            # Web scraping infringement detector
-│   ├── goods_detector/     # Database-based infringement detector
-│   ├── image_ai/           # Image processing utilities
-│   └── lark_client/        # Lark/Feishu API integration
-├── util/                   # Utility functions
-├── templates/              # Django templates
-└── static/                 # Static files
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.8+
-- Redis
-- MySQL
-- OpenAI API key
-- Lark/Feishu developer account
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <your-repo-url>
-cd lark-bot-portfolio
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your actual credentials
-```
-
-4. Set up the database:
-```bash
-python manage.py migrate
-```
-
-5. Run the development server:
-```bash
-python manage.py runserver
-```
-
-## 🔒 Security Notice
+## Security Notice
 
 This is a sanitized version of the project for portfolio display. All sensitive credentials, API keys, and business-specific data have been removed and replaced with placeholder values.
 
 **Important**: Replace all placeholder values in `.env.example` and `config.example.py` with actual credentials before running the application.
 
-## 📊 Performance Metrics
+## Performance Metrics
 
-- **Processing Speed**: 30+ products analyzed per run
-- **Accuracy**: 85%+ brand detection accuracy
-- **Scalability**: Handles 1000+ product images
-- **Response Time**: <3 seconds for image analysis
+   # idea_bot Chatbot:
 
-## 🧪 Testing
+   # Infringement Detector:
+   - **Processing Speed**: 30+ products analyzed per run
+   - **Accuracy**: 85%+ brand detection accuracy
+   - **Scalability**: Handles 1000+ product images
+   - **Response Time**: <3 seconds for image analysis
 
-Run the test suite:
-```bash
-# Test the goods-based infringement detector
-python home/goods_detector/test_goods_detector.py
+## Business Impact
+   
+   # idea_bot Chatbot:
 
-# Run Django tests
-python manage.py test
-```
-
-## 📈 Business Impact
-
-- **Efficiency**: Reduced manual product monitoring time by 80%
-- **Risk Management**: Identified 15+ high-risk products with potential infringement
-- **Cost Savings**: Automated analysis reducing manual review workload
-- **Scalability**: System processes 30+ products per run with room for expansion
-
-## 🤝 Contributing
-
-This is a portfolio project demonstrating full-stack development, AI integration, and production-ready system design.
-
-## 📄 License
-
-This project is for portfolio demonstration purposes.
-
----
-
-**Note**: This is a sanitized version of a production system. All sensitive data has been removed and replaced with placeholder values.
+   # Infringement Detector  
+   - **Efficiency**: Reduced manual product monitoring time by 80%
+   - **Risk Management**: Identified 15+ high-risk products with potential infringement
+   - **Cost Savings**: Automated analysis reducing manual review workload
+   - **Scalability**: System processes 30+ products per run with room for expansion
