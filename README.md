@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a comprehensive AI-powered system that combines web scraping, computer vision, and natural language processing to monitor products for brand infringement and provide intelligent business insights through a conversational AI chatbot.
+Consists of code for both an AI chatbot (idea_bot) used by Halara employees as a secure productivity tool that can have context aware assistance through its file, picture, and speech parsing capabilities (main implementation found in lark/home/idea_bot) and a comprehensive AI-powered system that takes Halara products from two sources: full crawling on the url thehalara.com and direct interaction with the Halara goods database, then detects these products for infringement issues against other brands in the industry. 
 
 ## Architecture
 
