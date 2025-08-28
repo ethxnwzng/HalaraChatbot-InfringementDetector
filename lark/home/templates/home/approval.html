@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Approval</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+</head>
+<body>
+
+<div class="container text-center">
+    <h1>Approval</h1>
+</div>
+
+<div class="align-left" style="margin-left: 50px">
+    <a href="/">回到上一级</a>
+</div>
+<hr>
+
+<div class="container">
+    <h2>records</h2>
+    <table class="table table-striped">
+    <caption>Approval List (Latest 1000)</caption>
+        <tr>
+            <th scope="col">approval_id</th>
+            <th scope="col">approval_name</th>
+            <th scope="col">detail</th>
+            <th scope="col">submit_time(UTC)</th>
+            <th scope="col">status</th>
+            <th scope="col">approval_time(UTC)</th>
+            <th scope="col">operate</th>
+        </tr>
+        {% for ins in instances %}
+        <tr>
+            <td>{{ ins.id }}</td>
+            <td>{{ ins.approval_name }}</td>
+            <td>{{ ins.detail }}</td>
+            <td>{{ ins.submit_time }}</td>
+            <td>
+                {% if ins.approval_status == 1 %}
+                <span style="font-weight: bold; color: #4cae4c">新创建</span>
+                {% elif ins.approval_status == 2 %}
+                <span style="font-weight: bold; color: #23527c">已通过</span>
+                {% elif ins.approval_status == 3 %}
+                <span style="font-weight: bold; color: #761c19">已拒绝</span>
+                {% elif ins.approval_status == 4 %}
+                <span style="font-weight: bold; color: #5e5e5e">已撤销</span>
+                {% elif ins.approval_status == 5 %}
+                <span style="font-weight: bold; color: #5e5e5e">已删除</span>
+                {% else %}
+                <span style="font-weight: bold; color: #5e5e5e">未知状态</span>
+                {% endif %}
+            </td>
+            <td>{{ ins.approval_time }}</td>
+            <td>
+                <button class="btn btn-warning btn-xs btn-check" data-id="{{ ins.instance_code }}">check</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+</body>
+</html>
+
+
+<script>
+    $('.btn-check').on('click', function () {
+        let instance_code = $(this).attr('data-id')
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/ajax-check-approval",
+            method: "POST",
+            data: {'instance_code': instance_code},
+            success: function (response, status, xhr) {
+                $(this).attr('disabled', false);
+                if (response !== 'ok') {
+                    alert(response);
+                    return;
+                }
+                window.location.reload();
+            },
+            error: function(jqXHR, textStatus) {
+                alert("Request failed: " + textStatus);
+            }
+        })
+    })
+</script>

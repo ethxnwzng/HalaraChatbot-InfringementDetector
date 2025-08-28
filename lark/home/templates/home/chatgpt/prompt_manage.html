@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prompt Management</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+    <script src="{% static 'home/tools.js' %}"></script>
+</head>
+<body>
+
+<div class="container text-center">
+    <h1>Prompt Management</h1>
+</div>
+<hr>
+<div class="align-left" style="margin-left: 50px">
+    <a href="/page/chatgpt/prompt">回到上一级</a>
+</div>
+
+<div class="container">
+    <select id="select-prompt-type" style="margin-left: 7px">
+        <option value="chatgpt-system" selected>tone (system_prompt)</option>
+        <option value="chatgpt-user">ask (user_prompt)</option>
+    </select>
+    <table class="table table-striped">
+        <tr>
+            <th>id</th>
+            <th>title</th>
+            <th>content</th>
+            <th>operate</th>
+        </tr>
+        {% for prompt in prompts %}
+            <tr>
+                <td>{{ prompt.id }}</td>
+                <td>{{ prompt.title }}</td>
+                <td>{{ prompt.detail.text }}</td>
+                <td>
+                    <button class="btn-prompt-del btn btn-xs btn-danger" data-id="{{ prompt.id }}" data-toggle="modal" data-target="#modal-del-tone">delete</button>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div id="modal-del-tone" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="h4-modify-title">Are you sure?</h4>
+      </div>
+      <div class="modal-body">
+          <p>点击确认后删除</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button id="btn-del-tone" class="btn btn-info" data-id="">确认并提交</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</body>
+</html>
+
+
+<script>
+    let prompt_type = "{{ prompt_type }}"
+    let selector_prompt_type = $("#select-prompt-type").get(0);
+     for(let i = 0; i < selector_prompt_type.options.length; i++){
+         let val = selector_prompt_type.options[i].value;
+             if(val === prompt_type){
+                selector_prompt_type.options[i].selected = 'selected';
+                break;
+             }
+     }
+</script>
+
+<script>
+    $('#select-prompt-type').on('change', function () {
+        let obj_prompt_type = $(this).val();
+        window.location.href = '/page/chatgpt/prompt/manage/' + obj_prompt_type
+    })
+</script>
+
+<script>
+    $('#modal-del-tone').on('show.bs.modal', function (event) {
+         let button = $(event.relatedTarget);
+         $('#btn-del-tone').attr('data-id', button.attr('data-id'));
+     });
+    let user_id = "{{ login_id }}"
+    $('#btn-del-tone').on('click', function () {
+        let obj_prompt_id = $(this).data('id');
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/chatgpt/prompt/del",
+            method: "POST",
+            dataType: "json",
+            data: JSON.stringify({'userId': user_id, 'promptId': obj_prompt_id}),
+            success: function (resp) {
+                $(this).attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    return;
+                }
+                window.location.reload()
+            },
+            error: function(jqXHR, textStatus) {
+                alert("Request failed: " + textStatus);
+            }
+        })
+    })
+</script>
+

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MBTI</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+</head>
+<body>
+
+<style>
+.large-radio {
+    transform: scale(1.5); /* 放大到n倍 */
+    margin: 10px; /* 添加一些间距使界面更友好 */
+}
+</style>
+
+<div class="container text-center">
+    <h1>Halara MBTI</h1>
+</div>
+<hr>
+<div class="container">
+    <p style="font-weight: bold;color: #2e6da4">欢迎：{{ login_name }}</p>
+    <h2>MBTI测试前须知</h2>
+    <ol>
+        <li>参加测试的人员请务必诚实、独立地回答问题，只有如此，才能得到有效的结果。</li>
+        <li>《性格分析报告》展示的是你的性格倾向，而不是你的知识、技能、经验。</li>
+        <li>MBTI提供的性格类型描述仅供测试者确定自己的性格类型之用，性格类型没有好坏，只有不同。每一种性格特征都有其价值和优点，也有缺点和需要注意的地方。清楚地了解自己的性格优劣势，有利于更好地发挥自己的特长，而尽可能的在为人处事中避免自己性格中的劣势，更好地和他人相处，更好地作重要的决策。</li>
+        <li>本测试分为四部分，共93题；需时约18分钟。所有题目没有对错之分，请根据自己的实际情况选择。只要你是认真、真实地填写了测试问卷，那么通常情况下你都能得到一个确实和你的性格相匹配的类型。希望你能从中或多或少地获得一些有益的信息。</li>
+    </ol>
+    <ul style="font-weight: bold;color: #2e6da4">
+        <li>1-26题	哪一个答案最能贴切的描绘你一般的感受或行为？</li>
+        <li>27-58题	在下列每一对词语中，哪一个词语更合你心意？请仔细想想这些词语的意义，而不要理会他们的字形或读音。</li>
+        <li>59-78题	哪一个答案最能贴切的描绘你一般的感受或行为？</li>
+        <li>79-93题	在下列每一对词语中，哪一个词语更合你心意？</li>
+    </ul>
+</div>
+<hr>
+
+<div class="container">
+    {% for item in items %}
+        <div class="container">
+        <label>序号：{{ item.index }}</label>
+        <p>{{ item.question }}</p>
+        <input type="radio" name="radio-{{ item.index }}" value="A" class="large-radio">&nbsp;&nbsp;{{ item.option_1 }}<br>
+        <input type="radio" name="radio-{{ item.index }}" value="B" class="large-radio">&nbsp;&nbsp;{{ item.option_2 }}
+        </div>
+        <hr>
+    {% endfor %}
+</div>
+
+<div class="container">
+    <button id="btn-submit" class="btn btn-lg btn-primary" style="width: 300px">Submit</button>
+</div>
+<hr>
+<br>
+<br>
+
+</body>
+</html>
+
+<script>
+    let login_id = "{{ login_id }}"
+    let size = {{ size|safe }}
+    $('#btn-submit').on('click', function () {
+        let options = []
+        for (let i=1; i<=size; i++) {
+            let name = "radio-" + i
+            let option = $('input[name="'+ name+'"]:checked').val()
+            if (option === undefined || option === '') {
+                alert('pls fill in question index: ' + i)
+                return
+            }
+            options.push(option)
+        }
+        $(this).attr('disabled', true)
+        $.ajax({
+            url: "/api/poll/mbti/cal",
+            method: "POST",
+            dataType: "json",
+            timeout: 20 * 1000,
+            data: JSON.stringify({'login_id': login_id, 'options': options}),
+            success: function (resp) {
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    $('#btn-submit').attr('disabled', false)
+                    return
+                }
+                window.location.reload();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error occurred:' + textStatus + ' - ' + errorThrown);
+                console.error('Detailed error information:', jqXHR);
+                $('#btn-submit').attr('disabled', false)
+            }
+        })
+
+    })
+</script>
+

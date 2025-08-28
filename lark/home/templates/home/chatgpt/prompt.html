@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatGPT Prompt</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+    <script src="{% static 'home/tools.js' %}"></script>
+</head>
+<body>
+
+<div class="container text-center">
+    <h1>ChatGPT Prompt</h1>
+</div>
+<hr>
+
+<div class="container">
+    <label>system_prompt(tone)</label>
+    <br>
+    <textarea id="text-system" style="width: 500px;height: 250px"></textarea>
+    <label>ask</label>
+    <textarea id="text-user" style="width: 500px;height: 250px"></textarea>
+</div>
+<div class="container">
+    <label>Welcome {{ login_name }}</label>
+    <button class="btn btn-info"  data-toggle="modal" data-target="#modal-add-tone">Save to my tone</button>
+    <button class="btn btn-warning"  data-toggle="modal" data-target="#modal-add-recipe" style="margin-left: 300px">Save to my recipe</button>
+    <select id="select-model" style="margin-left: 90px">
+        <option value="gpt-4" selected>gpt-4</option>
+        <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+    </select>
+    <button id="btn-generate" class="btn btn-lg btn-primary" style="margin-left: 8px">Generate</button>
+    <br>
+    <br>
+    <textarea id="text-answer" style="width: 1030px;height: 200px">Answer will be here.</textarea>
+</div>
+<hr>
+
+<div class="container">
+    <a href="/page/chatgpt/prompt/manage" class="btn btn-info">Prompt Management</a>
+</div>
+<hr>
+
+
+<div id="modal-add-tone" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Confirm Tone Title</h4>
+      </div>
+      <div class="modal-body">
+          <input id="input-add-tone-title" type="text" style="width: 70%;height: 30px">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button id="btn-add-tone" class="btn btn-info" data-taskid="">确认并提交</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="modal-add-recipe" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Confirm Recipe Title</h4>
+      </div>
+      <div class="modal-body">
+          <input id="input-add-recipe-title" type="text" style="width: 70%;height: 30px">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button id="btn-add-recipe" class="btn btn-info" data-taskid="">确认并提交</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</body>
+</html>
+
+
+<script>
+    $('#btn-generate').on('click', function () {
+        let system_prompt = $('#text-system').val();
+        let user_prompt = $('#text-user').val();
+        let model = $('#select-model').val();
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/chatgpt/ask",
+            method: "POST",
+            dataType: "json",
+            timeout: 5*60*1000,
+            data: JSON.stringify({'systemPrompt': system_prompt, 'userPrompt': user_prompt, 'model': model}),
+            success: function (resp) {
+                $('#btn-generate').attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    return;
+                }
+                let reply = resp['data']['reply'];
+                $('#text-answer').val(reply);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error occurred:' + textStatus + ' - ' + errorThrown);
+                console.error('Detailed error information:', jqXHR);
+            }
+        })
+    });
+</script>
+
+<script>
+    let user_id = "{{ login_id }}"
+    $('#btn-add-tone').on('click', function () {
+        let tone_title = $('#input-add-tone-title').val()
+        if (tone_title === '') {
+            alert('Pls input title')
+            return
+        }
+        let system_prompt = $('#text-system').val()
+        if (system_prompt === '') {
+            alert('Pls input system_prompt')
+            return
+        }
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/chatgpt/tone/add",
+            method: "POST",
+            dataType: "json",
+            data: JSON.stringify({'systemPrompt': system_prompt, 'userId': user_id, 'toneTitle': tone_title}),
+            success: function (resp) {
+                $('#btn-add-tone').attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    return;
+                }
+                alert('Success');
+                $('#modal-add-tone').modal("hide");
+            },
+            error: function(jqXHR, textStatus) {
+                alert("Request failed: " + textStatus);
+            }
+        })
+    })
+</script>
+
+<script>
+    user_id = "{{ login_id }}"
+    $('#btn-add-recipe').on('click', function () {
+        let recipe_title = $('#input-add-recipe-title').val()
+        if (recipe_title === '') {
+            alert('Pls input title')
+            return
+        }
+        let user_prompt = $('#text-user').val()
+        if (user_prompt === '') {
+            alert('Pls input ask content')
+            return
+        }
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/chatgpt/recipe/add",
+            method: "POST",
+            dataType: "json",
+            data: JSON.stringify({'userPrompt': user_prompt, 'userId': user_id, 'recipeTitle': recipe_title}),
+            success: function (resp) {
+                $('#btn-add-recipe').attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    return;
+                }
+                alert('Success');
+                $('#modal-add-recipe').modal("hide");
+            },
+            error: function(jqXHR, textStatus) {
+                alert("Request failed: " + textStatus);
+            }
+        })
+    })
+</script>
+

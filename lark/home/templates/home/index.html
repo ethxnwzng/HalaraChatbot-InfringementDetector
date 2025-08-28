@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lark Console</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+</head>
+<body>
+
+<div class="container text-center">
+    <h1>Lark Console</h1>
+</div>
+
+<hr>
+<div class="container">
+    <a href="/page/approval" class="btn btn-lg btn-primary">Approval</a>
+    <a href="/page/chatgpt" class="btn btn-lg btn-primary" style="margin-left: 20px">ChatGPT</a>
+    <a href="/page/tool" class="btn btn-lg btn-primary" style="margin-left: 20px">Tools</a>
+    <a href="/page/idea" class="btn btn-lg btn-primary" style="margin-left: 20px">Idea</a>
+    <a href="/page/poll/mbti" class="btn btn-lg btn-primary" style="margin-left: 20px">MBTI</a>
+</div>
+
+</body>
+</html>

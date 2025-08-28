@@ -1,0 +1,76 @@
+include:
+    remote: 'https://git.intra.doublefs.com/sys/antimage/-/raw/master/.gitlab-ci-template.yml'
+
+stages:
+#  - lint
+  - build-image
+  - deploy to c3
+  - deploy to c2
+
+build-image:
+  only:
+    - master
+  stage: build-image
+  script:
+    - docker build -t $REGISTRY:$CI_COMMIT_SHA --build-arg PIP=https://pypi.tuna.tsinghua.edu.cn/simple .
+    - docker push $REGISTRY:$CI_COMMIT_SHA
+
+deploy to c3:
+  stage: deploy to c3
+  extends: .deploy
+  environment:
+    name: c3
+  only:
+    - master
+  variables:
+    DFS_SVC_NAME: lark
+    DFS_SVC_HOST: lark
+    DFS_SVC_PORT: 8000
+    DFS_SVC_HEALTHCHECK_PATH: /  # 健康检查的路径，默认 /actuator/health
+    DFS_SVC_HEALTHCHECK_PORT: 8000  # 健康检查的端口，默认同 DFS_SVC_PORT
+    DFS_SVC_CMD: python manage.py runserver 0.0.0.0:8000
+
+c2-build-image:
+  only:
+    - master
+  extends: .image-c2
+  stage: build-image
+  tags:
+    - c2
+
+
+deploy to c2:
+  extends: .deploy-c2
+  environment:
+    name: c2
+  only:
+    - master
+  variables:
+    DFS_SVC_NAME: lark
+    DFS_SVC_HOST: lark
+    DFS_SVC_NODE_ROLE: us-growth
+    DFS_SVC_PORT: 8000
+    DFS_SVC_HEALTHCHECK_PATH: /
+    DFS_SVC_REPLICACOUNT: 2
+    DFS_SVC_MEMORY: 1G
+    DFS_SVC_CMD: python manage.py runserver 0.0.0.0:8000
+  stage: deploy to c2
+
+
+#sonarqube-check:
+#  stage: lint
+#  image:
+#    name: hub.intra.doublefs.com/sys/baseimage/sonarsource/sonar-scanner-cli:latest
+#    entrypoint: [""]
+#  variables:
+#    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+#    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+#  cache:
+#    key: "${CI_JOB_NAME}"
+#    paths:
+#      - .sonar/cache
+#  script:
+#    - sonar-scanner -Dsonar.qualitygate.wait=true
+#  allow_failure: false
+#  only:
+#    - master # or the name of your main branch

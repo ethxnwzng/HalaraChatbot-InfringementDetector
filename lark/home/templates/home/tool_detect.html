@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detect Tool</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+</head>
+<body>
+
+<div class="container text-center">
+    <h1>Detect Tool</h1>
+</div>
+<hr>
+
+<div class="container">
+    <div id="preview" style="display: inline-block;vertical-align: top;">
+    <textarea style="width: 300px;height: 300px" disabled>CTRL + V to Paste Picture</textarea>
+    <br>
+    <label>ad_id: </label><input id="input-ad" type="text" style="width: 50px" placeholder="it's number">
+    <label>fb_url: </label><input id="input-fb" type="text" placeholder="facebook post url">
+</div>
+
+<div style="display: inline-block;vertical-align: top;margin-left: 30px">
+    <textarea id="text-result" style="width: 200px;height: 300px" disabled>detect result will be here</textarea>
+</div>
+<div style="display: inline-block;vertical-align: top;margin-left: 30px">
+    <img id="img-raw" style="width: 300px" src="">
+</div>
+</div>
+<hr>
+<div class="container">
+    <p id="log"></p>
+    <button id="btn-detect" class="btn btn-primary btn-lg" data-pic="">Detect who is her/him?</button>
+</div>
+
+
+</body>
+</html>
+
+<script>
+    document.addEventListener('paste', function (event) {
+    var items = (event.clipboardData || window.clipboardData).items;
+    var file = null;
+    if (items && items.length) {
+        // 搜索剪切板items
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                file = items[i].getAsFile();
+                break;
+            }
+        }
+    } else {
+        log.innerHTML = '<span style="color:red;">Not support in this browser, Chrome recommend</span>';
+        return;
+    }
+    if (!file) {
+        log.innerHTML = '<span style="color:red;">Not picture by pasting</span>';
+        return;
+    }
+    // 此时file就是我们的剪切板中的图片对象
+    // 如果需要预览，可以执行下面代码
+    var reader = new FileReader()
+    reader.onload = function(event) {
+        preview.innerHTML = '<img style="width: 300px" src="' + event.target.result + '" class="upload-image">';
+    }
+    reader.readAsDataURL(file);
+    // 如果不需要预览，上面这段可以忽略
+
+    // 这里是上传
+    var xhr = new XMLHttpRequest();
+    // 上传进度
+    if (xhr.upload) {
+        xhr.upload.addEventListener('progress', function (event) {
+            log.innerHTML = 'uploading, progress: ' + Math.round(100 * event.loaded / event.total) / 100 + '%';
+        }, false);
+    }
+    // 上传结束
+    xhr.onload = function () {
+        let responseText = xhr.responseText;
+        let s3_url = JSON.parse(responseText)['data']['s3_url']
+        $("#btn-detect").attr('data-pic', s3_url)
+        log.innerHTML = 'upload success: ' + '<a href="' + s3_url + '" target="_blank">pic_url</a>';
+    };
+    xhr.onerror = function () {
+        log.innerHTML = '<span style="color:red;">Upload failed, network error</span>';
+    };
+    xhr.open('POST', '/api/tool/upload', true);
+    xhr.setRequestHeader('Filename', encodeURIComponent(file.name));
+    xhr.send(file);
+});
+
+</script>
+
+<script>
+    $('#btn-detect').on('click', function () {
+        let pic_url = $(this).attr('data-pic')
+        let ad_id = $('#input-ad').val()
+        let fb_url = $('#input-fb').val()
+        // check
+        if (pic_url === '' && ad_id === '' && fb_url === '') {
+            alert('empty input')
+            return
+        }
+
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/tool/detect",
+            method: "POST",
+            dataType: "json",
+            timeout: 5*60*1000,
+            data: JSON.stringify({'pic_url': pic_url, 'ad_id': ad_id, 'fb_url': fb_url}),
+            success: function (resp) {
+                $('#btn-detect').attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                }
+                let result = resp['data']['result']
+                let raw_url = resp['data']['raw_url']
+                $('#text-result').val(result)
+                $('#img-raw').attr('src', raw_url)
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error occurred:' + textStatus + ' - ' + errorThrown);
+                console.error('Detailed error information:', jqXHR);
+            }
+        })
+    })
+</script>
+

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reviews</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+    <script src="{% static 'home/tools.js' %}"></script>
+</head>
+<body>
+
+<div class="container text-center">
+    <h1>Reviews Analyze</h1>
+</div>
+<hr>
+
+<div style="display: inline-block;margin-left: 150px">
+    <form id="uploader" enctype="multipart/form-data" method="post" action="Upload.aspx">
+    <div class="row">
+        <label for="fileToUpload">Welcome {{ login_name }}, Select an Excel File to Upload</label><br>
+        <input class="btn" type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected();">
+    </div>
+    <div id="fileName"></div>
+    <div id="fileSize"></div>
+{#    <div id="fileType"></div>#}
+    <input id="input-columns" type="text" style="width: 250px;font-size: 13px" placeholder="columns separate by comma, from #1" value="{{ excel_columns }}">
+    <div class="row">
+        <input style="margin-left: 11px" id="btn-upload" class="btn btn-primary" type="button" onclick="uploadFile()" value="Upload">
+        <span id="progressNumber"></span>
+        <span style="margin-left: 10px">Tips: xlsx only, <span style="font-weight: bold;color: #ac2925">limit top 3000 reviews</span>.</span>
+    </div>
+</form>
+</div>
+
+<div style="display: inline-block;margin-left: 50px;vertical-align: top">
+    <label>One click extract</label>
+    <br>
+    <label>款号</label>
+    <input type="text" id="input-style-code" placeholder="only one style code" style="width: 200px">
+    <label>渠道</label>
+    <select>
+        <option value="mall" selected>mall</option>
+        <option value="ads">ads</option>
+    </select>
+    <br>
+    <label>日期</label>
+    <input type="date" id="input-date-from"> -
+    <input type="date" id="input-date-to">
+    <br>
+    <p></p>
+    <button class="btn btn-primary" disabled>Search</button>
+    <button class="btn btn-primary" disabled>Use Them</button>
+</div>
+<div style="margin-left: 150px;margin-top: 10px">
+    <label>定位到的评论数量：<span id="p-reviews-count" style="color: dodgerblue;font-weight: bold">{{ reviews_count }}</span></label>
+    {% if file_name != '' %}
+        - <span id="p-cache-file-name">{{ file_name }}</span>
+    {% endif %}
+</div>
+<hr>
+
+<div style="margin-left: 150px">
+    <label>prompt_mode: </label>
+    <label><input type="radio" value="sys" checked>system</label>
+    <label><input type="radio" value="custom" disabled>custom</label>
+    <label style="margin-left: 20px">object_desc</label>
+    <input id="input-obj-desc" type="text" style="width: 250px" value="{{ default_obj_desc }}">
+    <label style="margin-left: 10px">parentheses_tips</label>
+    <input id="input-tips" type="text" style="width: 150px" value="{{ default_tips }}">
+    <label style="margin-left: 10px">extra_desc</label>
+    <select id="select-extra-desc">
+        <option value="{{ prompt_cons }}">Cons</option>
+        <option value="{{ prompt_scenario }}">Scenario</option>
+        <option value="{{ prompt_pros }}">Pros</option>
+        <option value="{{ prompt_common }}">Common</option>
+    </select>
+    <button id="btn-regen-prompt" class="btn btn-xs btn-info">regen prompts</button>
+</div>
+
+<div style="display: inline-block;margin-left: 150px">
+    <label for="text-format">review_format</label><br>
+    <textarea id="text-format" style="width: 100px;height: 200px">{{ review_format }}</textarea>
+</div>
+
+<div style="display: inline-block;margin-left: 30px">
+    <label for="text-ask">ask_prompt</label><br>
+    <textarea id="text-ask" style="width: 450px;height: 200px" disabled>{{ ask_prompt }}</textarea>
+</div>
+<div style="display: inline-block;margin-left: 30px">
+    <label for="text-merge">merge_prompt</label><br>
+    <textarea id="text-merge" style="width: 300px;height: 200px" disabled>{{ merge_prompt }}</textarea>
+</div>
+<div style="display: inline-block;margin-left: 30px">
+    <label for="text-system">system_prompt</label><br>
+    <textarea id="text-system" style="width: 200px;height: 200px">{{ system_prompt }}</textarea>
+</div>
+<hr>
+
+<div style="display: inline-block;margin-left: 150px;">
+    {% if not disabled %}
+        <button id="btn-run" class="btn btn-primary btn-lg">Run Analyze</button>
+    {% endif %}
+</div>
+<div style="display: inline-block;margin-left: 30px;vertical-align: top">
+    {% if auto_merge %}
+        <input id="input-auto-merge" type="checkbox" checked><label style="margin-left: 5px">auto-merge</label>
+    {% else %}
+        <input id="input-auto-merge" type="checkbox"><label style="margin-left: 5px">auto-merge</label>
+    {% endif %}
+    <br>
+    <input id="input-use-lark" type="checkbox" checked disabled><label style="margin-left: 5px">use-lark-notify</label>
+</div>
+<div style="display: inline-block;margin-left: 30px;vertical-align: top">
+    <label for="input-temperature">temperature: <span id="p-show-temperature">{{ temperature }}</span></label>
+    <input id="input-temperature" style="width: 150px" type="range" min="0" max="2" value="{{ temperature }}" step="0.1" oninput="document.getElementById('p-show-temperature').innerHTML=value">
+</div>
+<div style="display: inline-block;margin-left: 30px;vertical-align: top">
+    <label for="input-words-batch">tokens-in-batch: <span id="p-show-words-batch">{{ words_batch }}</span></label>
+    <input id="input-words-batch" style="width: 150px" type="range" min="1000" max="{{ words_batch_max }}" value="{{ words_batch }}" step="500" oninput="document.getElementById('p-show-words-batch').innerHTML=value">
+</div>
+<hr>
+
+<div style="display: inline-block;margin-left: 150px">
+    <label for="text-reply-1">reply-1</label><br>
+    <textarea id="text-reply-1" style="width: 360px;height: 200px"></textarea>
+</div>
+
+<div style="display: inline-block;margin-left: 30px">
+    <label for="text-reply-2">reply-2</label><br>
+    <textarea id="text-reply-2" style="width: 360px;height: 200px"></textarea>
+</div>
+<div style="display: inline-block;margin-left: 30px">
+    <label for="text-reply-3">reply-3</label><br>
+    <textarea id="text-reply-3" style="width: 360px;height: 200px"></textarea>
+</div>
+
+<br>
+<div style="display: inline-block;margin-left: 150px;">
+    {% if not disabled %}
+        <button id="btn-merge" class="btn btn-warning btn-lg">Merge Reply</button>
+    {% endif %}
+</div>
+<hr>
+
+<div style="display: none;margin-left: 150px">
+    <label>Final Result</label>
+    <br>
+    <textarea id="text-result" style="width: 700px;height: 300px"></textarea>
+</div>
+{#<hr>#}
+<br>
+
+</body>
+</html>
+
+<script>
+    let user_id = "{{ login_id }}"
+    let user_name = "{{ login_name }}"
+</script>
+
+<script>
+function fileSelected() {
+    var file = document.getElementById('fileToUpload').files[0];
+    if (file) {
+        var fileSize = 0;
+        if (file.size > 1024 * 1024)
+            fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+        else
+            fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+        document.getElementById('fileName').innerHTML = 'Name: ' + file.name;
+        document.getElementById('fileSize').innerHTML = 'Size: ' + fileSize;
+        {#document.getElementById('fileType').innerHTML = 'Type: ' + file.type;#}
+    }
+}
+
+function uploadFile() {
+    let columns = $('#input-columns').val();
+    if (columns === "") {
+        alert('pls input use columns')
+        return
+    }
+    $('#btn-upload').val('Parsing...')
+    $('#btn-upload').attr('disabled', true);
+    var fd = new FormData();
+    fd.append("fileToUpload", document.getElementById('fileToUpload').files[0]);
+    fd.append('columns', columns);
+    fd.append('userId', user_id);
+    var xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener("progress", uploadProgress, false);
+    xhr.addEventListener("load", uploadComplete, false);
+    xhr.addEventListener("error", uploadFailed, false);
+    xhr.addEventListener("abort", uploadCanceled, false);
+    xhr.open("POST", "/api/chatgpt/review/upload"); //修改成自己的接口
+    xhr.send(fd);
+}
+
+function uploadProgress(evt) {
+    if (evt.lengthComputable) {
+        var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+        document.getElementById('progressNumber').innerHTML = percentComplete.toString() + '%';
+    } else {
+        document.getElementById('progressNumber').innerHTML = 'unable to compute';
+    }
+}
+
+function uploadComplete(evt) {
+    $('#btn-upload').val('Upload')
+    $('#btn-upload').attr('disabled', false);
+    /* 服务器端返回响应时候触发event事件*/
+    let resp = evt.target.responseText
+    resp = JSON.parse(resp)
+    if (resp['code'] !== 0) {
+        alert(resp['msg'])
+    } else {
+        $('#p-reviews-count').text(resp['data']['reviews_count'])
+        $('#p-cache-file-name').text('')
+    }
+    {#window.location.reload();#}
+}
+
+function uploadFailed(evt) {
+    alert("There was an error attempting to upload the file.");
+}
+
+function uploadCanceled(evt) {
+    alert("The upload has been canceled by the user or the browser dropped the connection.");
+}
+
+</script>
+
+<script>
+    $('#btn-run').on('click', function () {
+        let review_format = $('#text-format').val().trim()
+        let ask_prompt = $('#text-ask').val().trim()
+        let merge_prompt = $('#text-merge').val().trim()
+        let system_prompt = $('#text-system').val().trim()
+        let use_lark = $('#input-use-lark').is(":checked")
+        let auto_merge = $('#input-auto-merge').is(":checked")
+        if (review_format === "" || ask_prompt === "") {
+            alert('please fill review_format and ask_prompt')
+            return
+        }
+        if (auto_merge && merge_prompt === "") {
+            alert('please fill merge_prompt')
+            return
+        }
+        let temperature = $('#input-temperature').val()
+        let words_batch = $('#input-words-batch').val()
+
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/chatgpt/review/run",
+            method: "POST",
+            dataType: "json",
+            timeout: 5*60*1000,
+            data: JSON.stringify({'userId': user_id, 'reviewFormat': review_format, 'askPrompt': ask_prompt,
+            'mergePrompt': merge_prompt, 'systemPrompt': system_prompt, 'temperature': temperature, 'maxSegments': 0,
+            'useLark': use_lark, 'wordsBatch': words_batch, 'autoMerge': auto_merge}),
+            success: function (resp) {
+                $('#btn-run').attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    return;
+                }
+                if (use_lark) {
+                    alert('Submitted, pls wait for lark notify')
+                }
+                let resp_data = resp['data']
+                if (resp_data.hasOwnProperty('reply1')) {
+                    $('#text-reply-1').text(resp_data['reply1'])
+                }
+                if (resp_data.hasOwnProperty('reply2')) {
+                    $('#text-reply-2').text(resp_data['reply2'])
+                }
+                if (resp_data.hasOwnProperty('reply3')) {
+                    $('#text-reply-3').text(resp_data['reply3'])
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error occurred:' + textStatus + ' - ' + errorThrown);
+                console.error('Detailed error information:', jqXHR);
+            }
+        })
+    })
+</script>
+
+<script>
+    $('#btn-merge').on('click', function () {
+        let merge_prompt = $('#text-merge').val().trim()
+        if (merge_prompt === "") {
+            alert('pls input merge_prompt')
+            return
+        }
+        let system_prompt = $('#text-system').val().trim()
+        let temperature = $('#input-temperature').val()
+        let reply1 = $('#text-reply-1').val()
+        let reply2 = $('#text-reply-2').val()
+        let reply3 = $('#text-reply-3').val()
+        if (reply1 === "") {
+            alert('nothing to merge, at least one reply available')
+            return
+        }
+        let use_lark = $('#input-use-lark').is(":checked")
+        let replies = [reply1]
+        if (reply2 !== "") {
+            replies.push(reply2)
+        }
+        if (reply3 !== "") {
+            replies.push(reply3)
+        }
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/chatgpt/review/merge",
+            method: "POST",
+            dataType: "json",
+            timeout: 5*60*1000,
+            data: JSON.stringify({'userId': user_id, 'replies': replies, 'mergePrompt': merge_prompt,
+                'systemPrompt': system_prompt, 'temperature': temperature, 'useLark': use_lark}),
+            success: function (resp) {
+                $('#btn-merge').attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    return;
+                }
+                if (use_lark) {
+                    alert('Submitted, pls wait for lark notify')
+                }
+                let resp_data = resp['data']
+                if (resp_data.hasOwnProperty('reply')) {
+                    $('#text-result').text(resp['data']['reply'])
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error occurred:' + textStatus + ' - ' + errorThrown);
+                console.error('Detailed error information:', jqXHR);
+            }
+        })
+    })
+</script>
+
+<script>
+    let sys_ask_raw = "{{ sys_ask }}";
+    let sys_merge_raw = "{{ sys_merge }}";
+    function regen_prompts() {
+        let obj_desc = $('#input-obj-desc').val()
+        let tips = $('#input-tips').val()
+        let extra_desc = $("#select-extra-desc").val()
+        let sys_ask = sys_ask_raw.replace('#object_desc#', obj_desc)
+        sys_ask = sys_ask.replace('#extra_desc#', extra_desc)
+        sys_ask = sys_ask.replace('#parentheses_tips#', tips)
+        let sys_merge = sys_merge_raw.replace('#object_desc#', obj_desc)
+        sys_merge = sys_merge.replace('#extra_desc#', extra_desc)
+        $('#text-ask').val($('<div/>').html(sys_ask).text().replaceAll('&#13;', '\n'))
+        $('#text-merge').val($('<div/>').html(sys_merge).text().replaceAll('&#13;', '\n'))
+    }
+    regen_prompts()
+    $('#btn-regen-prompt').on('click', function () {
+        regen_prompts()
+    })
+</script>
+

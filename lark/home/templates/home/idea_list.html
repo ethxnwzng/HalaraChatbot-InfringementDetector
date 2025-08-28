@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Idea List</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+</head>
+<body>
+
+<div class="container text-center">
+    <h2>Idea List</h2>
+</div>
+<div class="container">
+    <label>Welcome {{ login_name }}</label>
+</div>
+<div>
+    <a href="#" style="position: fixed;left: 90%;right: 10px;top: 10%">回到顶部</a>
+</div>
+<hr>
+
+<div class="container">
+    <table class="table table-striped">
+        <tr>
+            <th>Id</th>
+            <th>Source</th>
+            <th>Video</th>
+            <th>Essay</th>
+            <th>Like</th>
+            <th>Comment</th>
+            <th>Collect</th>
+            <th>Share</th>
+            <th>Author</th>
+            <th>Time</th>
+            <th>Operate</th>
+        </tr>
+        {% for idea in ideas %}
+        <tr>
+            <td>{{ idea.id }}</td>
+            <td>{{ idea.source }}</td>
+            <td>
+                <video style="width: 200px" poster="{{ idea.cover }}" src="{{ idea.video }}" controls="controls">
+                    您的浏览器不支持 video 标签。
+                </video>
+            </td>
+            <td><p id="p-essay-{{ idea.id }}">{{ idea.essay }}</p></td>
+            <td>{{ idea.like }}</td>
+            <td>{{ idea.comment }}</td>
+            <td>{{ idea.collect }}</td>
+            <td>{{ idea.share }}</td>
+            <td>{{ idea.author }}</td>
+            <td>
+                <label>Operate At</label>
+                <p>{{ idea.update_at }}</p>
+                <label>Post At</label>
+                <p>{{ idea.post_at }}</p>
+            </td>
+            <td>
+                <button class="btn btn-primary" style="margin-bottom: 3px" data-id="{{ idea.id }}" data-toggle="modal" data-target="#modal-essay">essay</button>
+                <br>
+                <a class="btn btn-xs btn-primary" href="{{ idea.page_url }}" target="_blank">visit</a>
+                <button class="btn btn-xs btn-danger" data-id="{{ idea.id }}" data-toggle="modal" data-target="#modal-del">remove</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div id="modal-del" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Are you sure?</h4>
+      </div>
+      <div class="modal-body">
+          <p>点击确认后删除</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button id="btn-del" class="btn btn-info" data-id="">确认并提交</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="modal-essay" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">写描述视频的小作文</h4>
+      </div>
+      <div class="modal-body">
+          <textarea style="width: 550px;height: 200px" id="text-essay" placeholder="尽可能描述视频大体内容和创意亮点(自由文案)"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button id="btn-essay" class="btn btn-info" data-id="">确认并提交</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</body>
+</html>
+
+<script>
+    let user_id = "{{ login_id }}"
+    $('#modal-del').on('show.bs.modal', function (event) {
+         let button = $(event.relatedTarget);
+         $('#btn-del').attr('data-id', button.attr('data-id'));
+     });
+    $('#btn-del').on('click', function () {
+        let obj_idea_id = $(this).data('id');
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/idea/del",
+            method: "POST",
+            dataType: "json",
+            data: JSON.stringify({'userId': user_id, 'ideaId': obj_idea_id}),
+            success: function (resp) {
+                $(this).attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    return;
+                }
+                window.location.reload()
+            },
+            error: function(jqXHR, textStatus) {
+                alert("Request failed: " + textStatus);
+            }
+        })
+    })
+</script>
+
+<script>
+    $('#modal-essay').on('show.bs.modal', function (event) {
+         let button = $(event.relatedTarget);
+         let data_id = button.attr('data-id');
+         $('#btn-essay').attr('data-id', data_id);
+         $('#text-essay').val($('#p-essay-'+data_id).html());
+     });
+    $('#btn-essay').on('click', function () {
+        let obj_idea_id = $(this).data('id');
+        let essay = $('#text-essay').val();
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/idea/essay",
+            method: "POST",
+            dataType: "json",
+            data: JSON.stringify({'userId': user_id, 'ideaId': obj_idea_id, 'essay': essay}),
+            success: function (resp) {
+                $(this).attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                    return;
+                }
+                window.location.reload()
+            },
+            error: function(jqXHR, textStatus) {
+                alert("Request failed: " + textStatus);
+            }
+        })
+    })
+</script>
+

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Words Tool</title>
+    {% load static %}
+    <link rel="shortcut icon" href="{% static "home/favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'home/bootstrap.min.css' %}">
+    <script src="{% static 'home/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'home/popper.min.js' %}"></script>
+    <script src="{% static 'home/bootstrap.min.js' %}"></script>
+</head>
+<body>
+
+<div class="container text-center">
+    <h1>Words Tool</h1>
+</div>
+<hr>
+
+<div class="container">
+<div style="display: inline-block;vertical-align: top;">
+    <label>Input & Split Symbol: </label>&nbsp<input id="input-split" style="width: 50px" type="text" value=";">
+    <button id="btn-tackle" class="btn btn-primary">Tackle</button><br>
+    <textarea id="text-raw" style="width: 400px;height: 600px"></textarea>
+</div>
+
+<div style="display: inline-block;vertical-align: top;margin-left: 60px">
+    <label>Output</label><br>
+    <textarea id="text-result" style="width: 400px;height: 600px"></textarea>
+</div>
+</div>
+
+
+</body>
+</html>
+
+<script>
+    $('#btn-tackle').on('click', function () {
+        let raw = $('#text-raw').val()
+        let split = $('#input-split').val()
+        $(this).attr('disabled', true);
+        $.ajax({
+            url: "/api/tool/words",
+            method: "POST",
+            dataType: "json",
+            timeout: 5*60*1000,
+            data: JSON.stringify({'raw': raw, 'split': split}),
+            success: function (resp) {
+                $('#btn-tackle').attr('disabled', false);
+                if (resp['code'] !== 0) {
+                    alert(resp['msg']);
+                }
+                let result = resp['data']['str_result']
+                $('#text-result').val(result)
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('Error occurred:' + textStatus + ' - ' + errorThrown);
+                console.error('Detailed error information:', jqXHR);
+            }
+        })
+    })
+</script>
