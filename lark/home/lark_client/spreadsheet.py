@@ -334,7 +334,7 @@ class LarkSpreadSheet:
 
 
 if __name__ == '__main__':
-    sheet_token_ = 'XvSDsnUTChEj7lt5YIKcNlUJnxg'
+    sheet_token_ = os.getenv('SHEET_TOKEN', 'your_sheet_token_here')
     lss = LarkSpreadSheet(sheet_token_)
     body_ = [{'addSheet': {'properties': {'title': '1-cons', 'index': 0}}},
              {'addSheet': {'properties': {'title': '2-scenario', 'index': 1}}},

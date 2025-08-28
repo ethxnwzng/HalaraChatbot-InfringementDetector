@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '#+11^xdd_#0a-cv!t1w)39&tvb4)cs@9td4ps-ys-o-aufl1f9'
+SECRET_KEY = 'xyz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -107,7 +107,7 @@ if IS_PROD:
     DB_CONFIG.update({
         'HOST': 'us-prod-1.db.doublefs.com',
         'USER': 'common_rw',
-        'PASS': 'B[[wX>QS6gvup4/o%(_+',
+        'PASS': os.getenv('DB_PASSWORD', 'your_db_password_here'),
     })
     
     MATERIAL_DB_CONFIG.update({
@@ -120,7 +120,7 @@ if IS_PROD:
     CHAT_DB_CONFIG.update({
         'HOST': 'us-prod-1.db.doublefs.com',
         'USER': 'common_rw',
-        'PASS': 'B[[wX>QS6gvup4/o%(_+',  # Using the same password as common_rw
+        'PASS': os.getenv('DB_PASSWORD', 'your_db_password_here'),  # Using the same password as common_rw
         'NAME': 'common',
     })
     

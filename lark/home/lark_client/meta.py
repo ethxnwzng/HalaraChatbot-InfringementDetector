@@ -8,8 +8,8 @@ from util.lark_util import Lark
 from util.log_util import logger
 
 APPROVAL_ID = 'cli_a0000e444df89014'
-APPROVAL_SECRET = 'YLM2LwoW1yJuXrr7N3UF4ihasKZHq58c'
-APPROVAL_APPLICANT = 'ou_215729d9712fd2953e3b278791a0a9c5'
+APPROVAL_SECRET = os.getenv('APPROVAL_SECRET', 'your_approval_secret_here')
+APPROVAL_APPLICANT = os.getenv('APPROVAL_APPLICANT', 'your_approval_applicant_here')
 
 
 def get_token(app_id=None, app_secret=None, retry_max=2):

@@ -13,7 +13,7 @@ APP_SECRET = "your_app_secret_here"
 CHAT_BOT_NAME = 'idea_bot'
 
 # Test environment settings
-TEST_CHAT_ID = 'oc_eaf81600be37424fdf033ba9a7e33a4c'  # Chat ID for testing
+TEST_CHAT_ID = os.getenv('TEST_CHAT_ID', 'your_test_chat_id_here')  # Chat ID for testing
 
 
 def get_token():

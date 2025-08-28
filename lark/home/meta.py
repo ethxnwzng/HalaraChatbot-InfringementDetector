@@ -5,8 +5,8 @@ from home.enums import ApprovalStatus
 from util.log_util import logger
 
 APPROVAL_ID = 'cli_a0000e444df89014'
-APPROVAL_SECRET = 'YLM2LwoW1yJuXrr7N3UF4ihasKZHq58c'
-APPROVAL_APPLICANT = 'ou_215729d9712fd2953e3b278791a0a9c5'
+APPROVAL_SECRET = os.getenv('APPROVAL_SECRET', 'your_approval_secret_here')
+APPROVAL_APPLICANT = os.getenv('APPROVAL_APPLICANT', 'your_approval_applicant_here')
 APPROVAL_USER_DEFAULT = 'aaaa1515'
 
 APPROVAL_CODE_TEST = '4A707686-A08A-45D6-A3F1-56C97451F466'

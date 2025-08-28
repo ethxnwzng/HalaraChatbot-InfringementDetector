@@ -42,6 +42,6 @@ def get_user_info(token):
 
 
 if __name__ == '__main__':
-    token_ = '2sbmPeGYd8cFvM2HpZl0315l1Jhlhk6bNE00g5Q02zGM'
+    token_ = os.getenv('SSO_TOKEN', 'your_sso_token_here')
     h, o = get_user_info(token_)
     print(h, o)
